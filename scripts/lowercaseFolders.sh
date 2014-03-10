@@ -1,6 +1,8 @@
 #!/bin/bash
 # biafra ahanonu
-# updated: 2013.06.17
+# started: 2013.06.17
+# changelog
+	# 2014.02.02 - updated find so it goes by depth in reverse order
 
 # Yes/No function
 getYesNo(){
@@ -72,8 +74,10 @@ lowerCase(){
 	oldIFS=$IFS;
 	# change internal file separator
 	IFS=$(echo -en "\n\b");
+	# find the max depth in the file list, thanks Sorpigal for the concise function (http://stackoverflow.com/questions/4329369/recursive-function-to-return-directory-depth-of-file-tree)
+	maxDepth=$( find ./ -type d -exec bash -c 'echo $(tr -cd / <<< "$1"|wc -c):$1' -- {} \; | sort -n | tail -n 1 | awk -F: '{print $1}' )
 	# rename files in depth order to avoid move errors (e.g. directory does not exist)
-	fileList=$( depth=0; while find -mindepth $depth -maxdepth $depth -type d | grep --color=never '.'; do depth=$((depth + 1)); done )
+	fileList=$( depth=$maxDepth; while find -mindepth $depth -maxdepth $depth -type d | grep --color=never '.'; do depth=$((depth - 1)); done )
 	# fileList=$( `find * -depth -type d` )
 	# loop through all directories
 	for x in $fileList; do
